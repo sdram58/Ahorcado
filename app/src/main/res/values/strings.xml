@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Ahorcado</string>
+    <string name="start">Empezar</string>
+    <string name="quit">Salir</string>
+    <string name="jugar">Jugar</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="letras_dichas">Letras dichas</string>
+    <string name="fruta">Fruta</string>
+</resources>

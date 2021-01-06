@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="frutas_array">
+        <item>Almendra</item>
+        <item>Avellana</item>
+        <item>Cacahuete</item>
+        <item>Castaña</item>
+        <item>Nuez</item>
+        <item>Pistacho</item>
+        <item>Albaricoque</item>
+        <item>Cereza</item>
+        <item>Ciruela</item>
+        <item>Higo</item>
+        <item>Kaki</item>
+        <item>Manzana</item>
+        <item>Melocoton</item>
+        <item>Nectarina</item>
+        <item>Nispero</item>
+        <item>Pera</item>
+        <item>Uva</item>
+        <item>Aguacate</item>
+        <item>Carambola</item>
+        <item>Chirimoya</item>
+        <item>Coco</item>
+        <item>Datil</item>
+        <item>Kiwi</item>
+        <item>Litchi</item>
+        <item>Mango</item>
+        <item>Papaya</item>
+        <item>Piña</item>
+        <item>Platano</item>
+        <item>Sandia</item>
+        <item>Melon</item>
+        <item>Limon</item>
+        <item>Mandarina</item>
+        <item>Naranja</item>
+        <item>Pomelo</item>
+        <item>Arandano</item>
+        <item>Frambuesa</item>
+        <item>Fresa</item>
+        <item>Grosella</item>
+        <item>Zarzamora</item>
+    </string-array>
+</resources>
