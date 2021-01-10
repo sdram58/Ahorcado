@@ -10,6 +10,7 @@ import androidx.fragment.app.FragmentTransaction;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.PersistableBundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -33,16 +34,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     Button btnJugar;
     ImageView ivCuadroJuego;
     final static String URL_IMAGE ="https://webcarlos.com/fotosexamenes/ahorcado/";
+    final static String NUM_ERRORS_TAG ="NumErrors";
+    final static String PALABRA_SELECCIONADA_TAG ="PALABRA_SELECCIONADA_TAG";
+    final static String LETRAS_DICHAS ="LETRAS_DICHAS";
+    final int MAX_ERRORS = 6;
+    final int TIMEOUT = 2000;
 
-    String[] letras;
-    String[] palabras;
-    String palabraSelccionada;
+    String[] letras; /*Letras para el Spinner*/
+    String[] palabras; /*Array de palabras para seleccionar*/
+    String palabraSeleccionada=""; /*Palabra Seleccionada*/
 
     String letrasDichas = "";
     String curLetras ="";
     int numError = 0;
-    final int MAX_ERRORS = 6;
-    final int TIMEOUT = 2000;
+
+    Boolean isReset = false;
+
 
     FragmentManager fragmentManager;
 
@@ -71,16 +78,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // Apply the adapter to the spinner
         spinnerLetras.setAdapter(adapter);
 
-        restablecerPartida();
-
     }
 
     private void restablecerPartida() {
         letras = getResources().getStringArray(R.array.letras_array);
         palabras = getResources().getStringArray(R.array.frutas_array);
         curLetras = letras[0];
-        palabraSelccionada = palabras[aleatorio(0,palabras.length-1)];
+        palabraSeleccionada = palabras[aleatorio(0,palabras.length-1)];
         numError = 0;
+        letrasDichas = "";
+        spinnerLetras.setSelection(0);
 
         ponerFotoGlide(numError + 1);
 
@@ -90,7 +97,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .commit();
 
         fragmentManager.beginTransaction()
-                .replace(R.id.contenedor_palabra, PalabrasFragment.newInstance(palabraSelccionada,""))
+                .replace(R.id.contenedor_palabra, PalabrasFragment.newInstance(palabraSeleccionada,""))
                 .addToBackStack(null)
                 .commit();
 
@@ -113,6 +120,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.menu_start:
+                isReset = true;
                 restablecerPartida();
                 return true;
             case R.id.menu_quit:
@@ -126,6 +134,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
 
+        isReset = false;
+
         letrasDichas += curLetras +"*";
 
         if(noEstaLetra(curLetras)){
@@ -138,29 +148,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    Intent i = new Intent(MainActivity.this, ResultadoActivity.class);
-                    Bundle args = new Bundle();
-                    args.putBoolean(ResultadoActivity.RESULTADO_TAG, false);
-                    args.putInt(ResultadoActivity.ERRORES_TAG, numError);
-                    i.putExtras(args);
-                    startActivity(i);
+
+                    if(!isReset){
+                        Intent i = new Intent(MainActivity.this, ResultadoActivity.class);
+                        Bundle args = new Bundle();
+                        args.putBoolean(ResultadoActivity.RESULTADO_TAG, false);
+                        args.putInt(ResultadoActivity.ERRORES_TAG, numError);
+                        i.putExtras(args);
+                        startActivity(i);
+                    }
+                    isReset = false;
                 }
             },TIMEOUT);
         }else{
-            fragmentManager.beginTransaction()
-                    .replace(R.id.contenedor_letras, LetrasFragment.newInstance(letrasDichas))
-                    .addToBackStack(null)
-                    .commit();
-
-            fragmentManager.beginTransaction()
-                    .replace(R.id.contenedor_palabra, PalabrasFragment.newInstance(palabraSelccionada,letrasDichas))
-                    .addToBackStack(null)
-                    .commit();
+            actualizarFragmentos();
         }
     }
 
     private boolean noEstaLetra(String i) {
-        return palabraSelccionada.toUpperCase().indexOf(i)<0;
+        return palabraSeleccionada.toUpperCase().indexOf(i)<0;
     }
 
     @Override
@@ -190,12 +196,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    Intent i = new Intent(MainActivity.this, ResultadoActivity.class);
-                    Bundle args = new Bundle();
-                    args.putBoolean(ResultadoActivity.RESULTADO_TAG, true);
-                    args.putInt(ResultadoActivity.ERRORES_TAG, numError);
-                    i.putExtras(args);
-                    startActivity(i);
+                    if(!isReset){
+                        Intent i = new Intent(MainActivity.this, ResultadoActivity.class);
+                        Bundle args = new Bundle();
+                        args.putBoolean(ResultadoActivity.RESULTADO_TAG, true);
+                        args.putInt(ResultadoActivity.ERRORES_TAG, numError);
+                        i.putExtras(args);
+                        startActivity(i);
+                    }
+                    isReset = false;
                 }
             },TIMEOUT);
         }
@@ -203,11 +212,49 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
+        outState.putInt(NUM_ERRORS_TAG,numError);
+        outState.putString(PALABRA_SELECCIONADA_TAG,palabraSeleccionada);
+        outState.putString(LETRAS_DICHAS,letrasDichas);
+
         super.onSaveInstanceState(outState);
     }
 
+
     @Override
-    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
+
+        numError = savedInstanceState.getInt(NUM_ERRORS_TAG,0);
+        palabraSeleccionada = savedInstanceState.getString(PALABRA_SELECCIONADA_TAG,"");
+        letrasDichas = savedInstanceState.getString(LETRAS_DICHAS,"");
+
+        empezarPartida();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        empezarPartida();
+    }
+
+    private void empezarPartida() {
+        if(palabraSeleccionada.compareTo("")==0){
+            restablecerPartida();
+        }else{
+            ponerFotoGlide(numError + 1);
+            actualizarFragmentos();
+        }
+    }
+
+    private void actualizarFragmentos(){
+        fragmentManager.beginTransaction()
+                .replace(R.id.contenedor_letras, LetrasFragment.newInstance(letrasDichas))
+                .addToBackStack(null)
+                .commit();
+
+        fragmentManager.beginTransaction()
+                .replace(R.id.contenedor_palabra, PalabrasFragment.newInstance(palabraSeleccionada,letrasDichas))
+                .addToBackStack(null)
+                .commit();
     }
 }
